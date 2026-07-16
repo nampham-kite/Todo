@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUserDto } from './dtos/get-user.dto';
+import { LoginDto } from './dtos/login.dto';
+import { RegisterDto } from './dtos/register.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserService } from './user.service';
 @Controller('users')
@@ -33,6 +35,16 @@ export class UserController {
   @Delete(':id')
   async deleteUser(@Param('id') id: number) {
     const user = await this.userService.deleteUser(id);
+    return user;
+  }
+  @Post('login')
+  async login(@Body() dto: LoginDto) {
+    const token = await this.userService.login(dto);
+    return token;
+  }
+  @Post('register')
+  async register(@Body() dto: RegisterDto) {
+    const user = await this.userService.register(dto);
     return user;
   }
 }
