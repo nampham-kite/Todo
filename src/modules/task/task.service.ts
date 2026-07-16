@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
+import { Priority } from '../../database/entities/priority.entity';
 import { Task } from '../../database/entities/task.entity';
 import { User } from '../../database/entities/user.entity';
 import { AssignTaskDto } from './dtos/assign.dtot';
@@ -14,6 +15,8 @@ export class TaskService {
     private readonly taskRepository: Repository<Task>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Priority)
+    private readonly priorityRepository: Repository<Priority>,
   ) {}
   async getTasks(dto: GetTaskDto): Promise<Task[]> {
     const userId = dto.userId;
@@ -32,9 +35,17 @@ export class TaskService {
     }
   }
   async createTask(dto: CreateTaskDto) {
-    const result = await this.taskRepository.create(dto);
-    await this.taskRepository.save(result);
-    return result;
+    const priority = await this.priorityRepository.findOne({
+      where: { id: dto.priorityId },
+    });
+    if (!priority) {
+      throw new NotFoundException('Khong tim thay');
+    }
+    const result = await this.taskRepository.create({
+      ...dto,
+      priority: priority,
+    });
+    return this.taskRepository.save(result);
   }
   async updateTask(id: number, dto: UpdateTaskDto) {
     const task = await this.taskRepository.findOne({ where: { id } });

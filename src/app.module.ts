@@ -1,6 +1,7 @@
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PriorityModule } from './modules/priority/priority.module';
 import { TaskModule } from './modules/task/task.module';
 import { UserModule } from './modules/users/user.module';
 
@@ -18,6 +19,7 @@ import { UserModule } from './modules/users/user.module';
     }),
     TaskModule,
     UserModule,
+    PriorityModule,
   ],
 })
 export class AppModule {}

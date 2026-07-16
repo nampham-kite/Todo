@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Priority } from './priority.entity';
 import { User } from './user.entity';
 
 @Entity()
@@ -26,4 +27,7 @@ export class Task {
   @ManyToOne(() => User, (user) => user.tasks)
   @JoinColumn({ name: 'user_id' })
   user!: User;
+  @ManyToOne(() => Priority, (priority) => priority.tasks)
+  @JoinColumn({ name: 'priority_id' })
+  priority!: Priority;
 }
