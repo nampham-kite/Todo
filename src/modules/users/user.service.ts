@@ -8,6 +8,8 @@ import { Like, Repository } from 'typeorm';
 import { User } from '../../database/entities/user.entity';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { GetUserDto } from './dtos/get-user.dto';
+import { LoginDto } from './dtos/login.dto';
+import { RegisterDto } from './dtos/register.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
@@ -75,5 +77,36 @@ export class UserService {
     }
     await this.userRepository.delete({ id: id });
     return { message: 'User deleted successfully' };
+  }
+  async login(dto: LoginDto) {
+    const username = dto.username;
+    const password = dto.password;
+    const user = await this.userRepository.findOne({
+      where: {
+        username: username,
+        password: password,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return { message: 'Login successful' };
+  }
+  async register(dto: RegisterDto) {
+    const username = dto.username;
+    const password = dto.password;
+    const user = await this.userRepository.findOne({
+      where: {
+        username: username,
+      },
+    });
+    if (user) {
+      throw new BadRequestException('Tai khoan da ton tai');
+    }
+    const newUser = this.userRepository.create({
+      username: username,
+      password: password,
+    });
+    return this.userRepository.save(newUser);
   }
 }
