@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Task } from '../../database/entities/task.entity';
+import { User } from '../../database/entities/user.entity';
+import { AssignTaskDto } from './dtos/assign.dtot';
 import { CreateTaskDto } from './dtos/create-task.dto';
 import { GetTaskDto } from './dtos/get-task.dto';
 import { UpdateTaskDto } from './dtos/update-task.dto';
@@ -10,12 +12,24 @@ export class TaskService {
   constructor(
     @InjectRepository(Task)
     private readonly taskRepository: Repository<Task>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
   async getTasks(dto: GetTaskDto): Promise<Task[]> {
-    const result = await this.taskRepository.find({
-      where: { title: Like(`%${dto.search}%`) },
-    });
-    return result;
+    const userId = dto.userId;
+    if (userId) {
+      const result = await this.taskRepository.find({
+        where: { user: { id: userId } },
+        relations: { user: true },
+      });
+      return result;
+    } else {
+      const result = await this.taskRepository.find({
+        where: { title: Like(`%${dto.search}%`) },
+        relations: { user: true },
+      });
+      return result;
+    }
   }
   async createTask(dto: CreateTaskDto) {
     const result = await this.taskRepository.create(dto);
@@ -35,5 +49,21 @@ export class TaskService {
       throw new NotFoundException('Khong tim thay');
     }
     return await this.taskRepository.delete(id);
+  }
+  async assignTask(id: number, dto: AssignTaskDto) {
+    const userId = dto.userId;
+    const task = await this.taskRepository.findOne({ where: { id } });
+    if (!task) {
+      throw new NotFoundException('Khong tim thay');
+    }
+
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('Khong tim thay');
+    }
+    const result = await this.taskRepository.update(id, {
+      user: { id: dto.userId },
+    });
+    return result;
   }
 }

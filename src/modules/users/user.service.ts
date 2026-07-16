@@ -26,6 +26,7 @@ export class UserService {
         where: {
           username: Like(`%${username}%`),
         },
+        relations: { tasks: true },
       });
       return result;
     }
@@ -34,11 +35,14 @@ export class UserService {
         where: {
           email: Like(`%${email}%`),
         },
+        relations: { tasks: true },
       });
       return result;
     }
 
-    const users = await this.userRepository.find({});
+    const users = await this.userRepository.find({
+      relations: { tasks: true },
+    });
     return users;
   }
   async createUser(dto: CreateUserDto) {
